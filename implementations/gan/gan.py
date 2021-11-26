@@ -66,9 +66,67 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
     
-    self.model = nn.Sequential(
-        nn.Linear(int(np.prod(img_shape),512)),
-        nn.LeakyReLU(negative_slope= 0.2, inplace=True),
-        nn.Linear(512,512),
-        
-    )
+        self.model = nn.Sequential(
+            nn.Linear(int(np.prod(img_shape)), 512),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(256, 1),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, z):
+        img_flat = img.view(img.size(0), -1)
+        validity = self.model(img_flat)
+
+        return validity
+
+#Loss function
+adversarial_loss = torch.nn.BCELoss()
+
+#Initialise generator and Discriminator
+generator = Generator()
+discriminator = Discriminator()
+
+if cuda:
+    generator.cuda()
+    discriminator.cuda()
+    adversarial_loss.cuda()
+
+# Configure data loader
+os.mkdir("../../data/mnist", exist_ok=True)
+dataloader  = torch.utils.data.DataLoader(
+    datasets.MNIST(
+        "../../data/mnist",
+        train = True,
+        download = True,
+        transform = transforms.Compose(
+            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalise([0.5],[0.5])]
+        )
+    ),
+    batch_size = opt.batch_size, #from passed parameters
+    shuffle = True,
+)
+
+#optimisers
+optimiser_G = torch.optim.Adam(generator.parameters(), lr = opt.lr, betas = (opt.b1, opt.b2))
+optimiser_D = torch.optim.Adam(discriminator.parameters(), lr = opt.lr, betas = (opt.b1, opt.b2))
+
+Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+
+
+#Training
+
+for epoch in range(opt.n_epochs):
+    for i, (imgs, __) in enumerate(dataloader):
+
+        #For Discriminator
+        #Representing ground truths i.e 0 for fake, 1 for real
+        valid = Variable(Tensor(imgs.size(0),1).fill_(1.0), requires_grad = False)
+        fake = Variable(Tensor(imgs.size(0),1).fill_(0.0), requires_grad = False)
+
+        #configure input
+        real_imgs = Variable(imgs.type(Tensor))
+
+        #Training the Generator
+        optimiser_G.zero_grad() #resetting the previous gradient data
