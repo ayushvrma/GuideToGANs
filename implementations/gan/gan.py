@@ -40,26 +40,27 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        def block(in_feat, out_feat, normalise = True):
+        def block(in_feat, out_feat, normalize=True):
             layers = [nn.Linear(in_feat, out_feat)]
-            if normalise:
-                layers.append(nn.BatchNorm1D(out_feat, 0.8))
-            layers.append(nn.LeakyReLU(0.2, inplace= True))
+            if normalize:
+                layers.append(nn.BatchNorm1d(out_feat, 0.8))
+            layers.append(nn.LeakyReLU(0.2, inplace=True))
             return layers
 
         self.model = nn.Sequential(
-            *block(opt.latent_dim, 128, normalise=False),
-            *block(128, 128),
-            *block(128,256),
+            *block(opt.latent_dim, 128, normalize=False),
+            *block(128, 256),
+            *block(256, 512),
             *block(512, 1024),
             nn.Linear(1024, int(np.prod(img_shape))),
             nn.Tanh()
         )
 
-        def forward(self, z):
-            img = self.model(z)
-            img = img.view(img.size(0), *img_shape)
-            return img
+    def forward(self, z):
+        img = self.model(z)
+        img = img.view(img.size(0), *img_shape)
+        return img
+
 
 
 class Discriminator(nn.Module):
@@ -75,7 +76,7 @@ class Discriminator(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, z):
+    def forward(self, img):
         img_flat = img.view(img.size(0), -1)
         validity = self.model(img_flat)
 
@@ -94,14 +95,14 @@ if cuda:
     adversarial_loss.cuda()
 
 # Configure data loader
-os.mkdir("../../data/mnist", exist_ok=True)
+os.makedirs("../../data/mnist", exist_ok=True)
 dataloader  = torch.utils.data.DataLoader(
     datasets.MNIST(
         "../../data/mnist",
         train = True,
         download = True,
         transform = transforms.Compose(
-            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalise([0.5],[0.5])]
+            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5],[0.5])]
         )
     ),
     batch_size = opt.batch_size, #from passed parameters
@@ -118,7 +119,7 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 #Training
 
 for epoch in range(opt.n_epochs):
-    for i, (imgs, __) in enumerate(dataloader):
+    for i, (imgs, _) in enumerate(dataloader):
 
         #For Discriminator
         #Representing ground truths i.e 0 for fake, 1 for real
@@ -132,7 +133,7 @@ for epoch in range(opt.n_epochs):
         optimiser_G.zero_grad() #resetting the previous gradient data to zero
 
         #inputing random noise as Generator input
-        z = Variable(Tensor(np.random.normal(0,1, (img_shape[0], opt.latent_dim))))
+        z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], opt.latent_dim))))
 
         #Generate a batch of images
         gen_imgs = generator(z)
@@ -155,7 +156,7 @@ for epoch in range(opt.n_epochs):
         d_loss.backward()
         optimiser_D.step()
 
-        print(f"[Epoch: {epoch}/{opt.n_epochs}] [Batch {i}/{len(dataloader)} [D loss {d_loss.item}] [G loss {l_loss.item}]")
+        print(f"[Epoch: {epoch}/{opt.n_epochs}] [Batch {i}/{len(dataloader)} [D loss {d_loss.item}] [G loss {g_loss.item}]")
 
         batches_done = epoch * len(dataloader) + 1
         if batches_done % opt.sample_interval == 0:
