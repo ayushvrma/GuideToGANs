@@ -61,3 +61,14 @@ class Generator(nn.Module):
             img = img.view(img.size(0), *img_shape)
             return img
 
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+    
+    self.model = nn.Sequential(
+        nn.Linear(int(np.prod(img_shape),512)),
+        nn.LeakyReLU(negative_slope= 0.2, inplace=True),
+        nn.Linear(512,512),
+        
+    )
