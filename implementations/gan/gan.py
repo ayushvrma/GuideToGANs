@@ -129,4 +129,34 @@ for epoch in range(opt.n_epochs):
         real_imgs = Variable(imgs.type(Tensor))
 
         #Training the Generator
-        optimiser_G.zero_grad() #resetting the previous gradient data
+        optimiser_G.zero_grad() #resetting the previous gradient data to zero
+
+        #inputing random noise as Generator input
+        z = Variable(Tensor(np.random.normal(0,1, (img_shape[0], opt.latent_dim))))
+
+        #Generate a batch of images
+        gen_imgs = generator(z)
+
+        #loss measurement
+        g_loss = adversarial_loss(discriminator(gen_imgs), valid)
+
+        g_loss.backward() #sending it back for back-propogation
+        optimiser_G.step()
+
+
+        #Training the Discriminator
+        optimiser_D.zero_grad()
+
+        #Measure discriminator's ability to classify real from generated samples
+        real_loss = adversarial_loss(discriminator(real_imgs), valid) #loss in case where discriminator wasnt able to identify real images properly
+        fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake) 
+        d_loss = (real_loss + fake_loss)/2 #average of both losses
+
+        d_loss.backward()
+        optimiser_D.step()
+
+        print(f"[Epoch: {epoch}/{opt.n_epochs}] [Batch {i}/{len(dataloader)} [D loss {d_loss.item}] [G loss {l_loss.item}]")
+
+        batches_done = epoch * len(dataloader) + 1
+        if batches_done % opt.sample_interval == 0:
+            save_image(gen_imgs.data[:25], "images/%d.png", batches_done, n_row = 5, normalize = True)
