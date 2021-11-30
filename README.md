@@ -38,7 +38,13 @@ In recent years, supervised learning with convolutional networks (CNNs) has seen
 [[Paper]](https://arxiv.org/abs/1511.06434) [[Code]](implementations/dcgan/dcgan.py)
 
 #### Run Example
+On MNIST dataset
 ```
 $ cd implementations/dcgan/
-$ python3 dcgan.py
+$ python3 dcgan_mnist.py
+```
+On CIFAR10 dataset
+```
+$ cd implementations/dcgan/
+$ python3 dcgan_cifar10.py
 ```
