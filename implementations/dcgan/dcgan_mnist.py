@@ -131,3 +131,9 @@ dataloader = torch.utils.data.Dataloader(
     batch_size = opt.batch_size,
     shuffle = True,
 )
+
+# Optimizers
+optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas = (opt.b1, opt.b2))
+optimizer_D = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas = (opt.b1, opt.b2))
+
+Tensor = torch.cuda.FloatTensor if cuda else torch.Float
