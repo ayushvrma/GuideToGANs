@@ -164,7 +164,7 @@ for epoch in range(opt.n_epochs):
         gen_imgs = generator(z)
 
         #Loss measurment
-        g_loss = adversarial_loss(discriminator(gen_imgs.detach()), valid)
+        g_loss = adversarial_loss(discriminator(gen_imgs.detach()), valid.detach())
 
         g_loss.backward()
         optimizer_G.step()
@@ -176,8 +176,8 @@ for epoch in range(opt.n_epochs):
 
         #Measuring discriminator's ability to distinguish between real and fake
 
-        real_loss = adversarial_loss(discriminator(real_imgs), valid)
-        fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake)
+        real_loss = adversarial_loss(discriminator(real_imgs), valid.detach())
+        fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake.detach())
         d_loss = (real_loss + fake_loss) / 2
 
         d_loss.backward()
