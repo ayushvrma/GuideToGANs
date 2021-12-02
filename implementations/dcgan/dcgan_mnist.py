@@ -137,3 +137,41 @@ optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas = (opt.b
 optimizer_D = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas = (opt.b1, opt.b2))
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.Float
+
+
+# TRAINING
+
+for epoch in range(opt.n_epochs):
+    for i, (imgs, _) in enumerate(dataloader):
+
+        #Setting ground truths
+        valid = Variable(Tensor(imgs.shape[0],1).fill_(1.0), requires_grad = True)
+        fake = Variable(Tensor(imgs.shape[0],1).fill_(0.0), requires_grad = True)
+
+        #input images
+        real_imgs = Variable(imgs.type(Tensor))
+
+        #Training the Generator
+
+        optimizer_G.zero_grad()
+
+        #sampled noise as generated input to the generator
+        z = Variable(Tensor(np.random.normal(0,1, (imgs.shape[0], opt.latent_dim))))
+
+        #Generating a batch of images
+        gen_imgs = generator(z)
+
+        #Loss measurment
+        g_loss = adversarial_loss(discriminator(gen_imgs), valid)
+
+        g_loss.backward()
+        optimizer_G.step()
+
+
+        #Training the Discriminator
+
+        optimizer_D.zero_grad() #basically resets the previous stored gradient data
+
+        #Measuring discriminator's ability to distinguish between real and fake
+
+        
