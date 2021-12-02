@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F 
 import torch 
 
-os.makedirs("images", exis_ok = True)
+os.makedirs("images", exist_ok = True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
@@ -72,27 +72,28 @@ class Generator(nn.Module):
     
 
 #Discriminator class
-
 class Discriminator(nn.Module):
     def __init__(self):
-        super(Discriminator(), self().__init__())
+        super(Discriminator, self).__init__()
 
-    def discriminator_block(in_filters, out_filters, bn=True):
-        block = [nn.Conv2d(in_filters, out_filters, 3, 2, 1), nn.LeakyReLU(0.2, inplace=True), nn.Dropout2d(0.25)]
-        if bn:
-            block.append(nn.BatchNorm2d(out_filters, 0.8))
-        return block
+        def discriminator_block(in_filters, out_filters, bn=True):
+            block = [nn.Conv2d(in_filters, out_filters, 3, 2, 1), nn.LeakyReLU(
+                0.2, inplace=True), nn.Dropout2d(0.25)]
+            if bn:
+                block.append(nn.BatchNorm2d(out_filters, 0.8))
+            return block
 
-    self.model = nn.Sequential(
-        *discriminator_block(opt.channels, 16, bn=False),
-        *discriminator_block(16, 32),
-        *discriminator_block(32, 64),
-        *discriminator_block(64, 128),
-    )
+        self.model = nn.Sequential(
+            *discriminator_block(opt.channels, 16, bn=False),
+            *discriminator_block(16, 32),
+            *discriminator_block(32, 64),
+            *discriminator_block(64, 128),
+        )
 
-    # The height and width of downsampled image
-    ds_size = opt.img_size // 2 ** 4
-    self.adv_layer = nn.Sequential(nn.Linear(128 * ds_size ** 2, 1), nn.Sigmoid())
+        # The height and width of downsampled image
+        ds_size = opt.img_size // 2 ** 4
+        self.adv_layer = nn.Sequential(
+            nn.Linear(128 * ds_size ** 2, 1), nn.Sigmoid())
 
     def forward(self, img):
         out = self.model(img)
@@ -100,6 +101,7 @@ class Discriminator(nn.Module):
         validity = self.adv_layer(out)
 
         return validity
+
 
 #Loss Function
 adversarial_loss = torch.nn.BCELoss()
@@ -118,14 +120,14 @@ generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
 # Configure data loader 
-os.makedirs("../../data/mnist")
-dataloader = torch.utils.data.Dataloader(
+os.makedirs("../../data/mnist", exist_ok= True)
+dataloader = torch.utils.data.DataLoader(
     datasets.MNIST(
         "../../data/mnist",
         train = True,
         download = True,
         transform = transforms.Compose(
-            [transforms.Resize(opt.img_size), transforms.ToTensors(), transforms.Normalize([0.5], [0.5])]
+            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
         ),
     ),
     batch_size = opt.batch_size,
@@ -162,7 +164,7 @@ for epoch in range(opt.n_epochs):
         gen_imgs = generator(z)
 
         #Loss measurment
-        g_loss = adversarial_loss(discriminator(gen_imgs), valid)
+        g_loss = adversarial_loss(discriminator(gen_imgs.detach()), valid)
 
         g_loss.backward()
         optimizer_G.step()
