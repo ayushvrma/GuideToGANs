@@ -28,14 +28,14 @@ We propose a new architecture for estimating generative models via an adversaria
 $ cd implementations/gan/
 $ python3 gan.py
 ```
-
+#
 ### Deep Convolutional GAN
 _Deep Convolutional Generative Adversarial Networks_
 
 #### Abstract
 In recent years, supervised learning with convolutional networks (CNNs) has seen huge adoption in computer vision applications. Comparatively, unsupervised learning with CNNs has received less attention. In this work we hope to help bridge the gap between the success of CNNs for supervised learning and unsupervised learning. We introduce a class of CNNs called deep convolutional generative adversarial networks (DCGANs), that have certain architectural constraints, and demonstrate that they are a strong candidate for unsupervised learning. Training on various image datasets, we show convincing evidence that our deep convolutional adversarial pair learns a hierarchy of representations from object parts to scenes in both the generator and discriminator. Additionally, we use the learned features for novel tasks - demonstrating their applicability as general image representations.
 
-[[Paper]](https://arxiv.org/abs/1511.06434) [[Code]](implementations/dcgan/dcgan.py)
+[[Paper]](https://arxiv.org/abs/1511.06434) [[Code]](implementations/dcgan/dcgan_mnist.py)
 
 #### Run Example
 On MNIST dataset
@@ -47,4 +47,20 @@ On CIFAR10 dataset
 ```
 $ cd implementations/dcgan/
 $ python3 dcgan_cifar10.py
+```
+#
+### Conditional GANs
+_Conditional Generative Adversarial Nets_
+### Abstract
+The only disadvantage of normal GANs is that we have no control over the output that they produce. Therefore, to do that we introduce labels into the equation. So instead of the direct probability of x, we use x|y i.e conditional probability of x when y has already happened.
+
+Generative Adversarial Nets were recently introduced as a novel way to train generative models. In this work we introduce the conditional version of generative adversarial nets, which can be constructed by simply feeding the data, y, we wish to condition on to both the generator and discriminator. We show that this model can generate MNIST digits conditioned on class labels. We also illustrate how this model could be used to learn a multi-modal model, and provide preliminary examples of an application to image tagging in which we demonstrate how this approach can generate descriptive tags which are not part of training labels.
+
+[[Paper]](https://arxiv.org/abs/1411.1784) [[Code]](implementations/cgan/cgan_mnist.py)
+
+#### Run Example
+On MNIST
+```
+$ cd implementations/cgan/
+$ python3 cgan_mnist.py
 ```
