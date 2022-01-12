@@ -6,7 +6,8 @@ A lot of inspiration has been taken from @eriklindernoren 's repository right [h
   * [Installation](#installation)
   * [Implementation](#implementation)
     + [GAN](#gan)
-    + [Deep Convolutional GAN](#deep-convolutional-gan)
+    + [Deep Convolutional GAN](#deep-convolutional-gan) 
+    + [Conditional GAN](#conditional-gans)
 
 
 ## Installation
